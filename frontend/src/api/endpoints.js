@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Базова адреса вашого Go-сервера
-cconst API_URL = "https://pc-configurator-backend-taras.onrender.com/api";
+cconst API_URL = "https://pc-configurator-backend.onrender.com";
 
 export const api = axios.create({
     baseURL: API_BASE_URL,
