@@ -48,10 +48,15 @@ func main() {
 	mux.HandleFunc("/api/components", handlers.GetAllComponents)
 	mux.HandleFunc("/api/validate", handlers.ValidateBuild)
 
-	// НОВИЙ МАРШРУТ ДЛЯ ЗАМОВЛЕНЬ
-	mux.HandleFunc("/api/orders", handlers.CreateOrder)
+	// НОВИЙ МАРШРУТ ДЛЯ ЗАМОВЛЕНЬ (лише для авторизованих користувачів)
+	mux.HandleFunc("/api/orders", mw.AuthMiddleware(handlers.CreateOrder))
 
-	// 5. Запуск
+	// ЗАХИЩЕНІ МАРШРУТИ (потребують авторизації)
+	mux.HandleFunc("/api/auth/me", mw.AuthMiddleware(handlers.GetProfile))
+	mux.HandleFunc("/api/auth/change-password", mw.AuthMiddleware(handlers.ChangePassword))
+	mux.HandleFunc("/api/orders/my", mw.AuthMiddleware(handlers.GetUserOrders))
+
+	// 5. Запуск сервера
 	handlerWithCORS := mw.CORSMiddleware(mux)
 
 	srv := &http.Server{

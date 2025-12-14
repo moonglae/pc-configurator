@@ -14,7 +14,7 @@ const ComponentCard = ({ item, onSelect, isSelected }) => {
 
     return (
         <div 
-            className="glass-panel hover-card"
+            className="glass-panel product-card hover-card"
             style={{
                 borderRadius: '4px',
                 padding: '15px',

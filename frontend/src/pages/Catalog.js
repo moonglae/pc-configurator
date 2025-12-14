@@ -104,10 +104,10 @@ const Catalog = () => {
             </div>
 
             {/* ОСНОВНА СІТКА (Фільтри зліва + Товари справа) */}
-            <div style={{ display: 'grid', gridTemplateColumns: '250px 1fr', gap: '30px' }}>
+            <div className="catalog-layout" style={{ display: 'grid', gridTemplateColumns: '250px 1fr', gap: '30px' }}>
                 
                 {/* 1. БОКОВА ПАНЕЛЬ ФІЛЬТРІВ */}
-                <div>
+                <div className="filter-sidebar">
                     <FilterBar filters={filters} setFilters={setFilters} />
                 </div>
 
@@ -116,11 +116,12 @@ const Catalog = () => {
                     {loading ? (
                         <div style={{ color: '#666', fontSize: '1.5rem', textAlign: 'center', marginTop: '50px' }}>SEARCHING...</div>
                     ) : (
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px', justifyContent: 'start' }}>
+                        <div className="products-grid" style={{ display: 'flex', flexWrap: 'wrap', gap: '20px', justifyContent: 'start' }}>
                             {items.length > 0 ? items.map((item, idx) => (
                                 <ComponentCard 
                                     key={item.id} 
-                                    item={item} 
+                                    item={item}
+                                    className="product-card"
                                     index={idx}
                                     onSelect={() => selectComponent(activeTab, item)}
                                     isSelected={selectedComponents[activeTab]?.id === item.id}

@@ -1,24 +1,32 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { BuilderProvider } from './context/BuilderContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import ProtectedRoute from './components/ProtectedRoute'; 
+import ProtectedRoute from './components/ProtectedRoute';
+import './App.css';
 
 import Home from './pages/Home';
 import Catalog from './pages/Catalog';
 import BuildPage from './pages/BuildPage';
 import AuthPage from './pages/AuthPage';
+import Profile from './pages/Profile';
 
 // --- ОКРЕМИЙ КОМПОНЕНТ ШАПКИ (Header) ---
 // Ми винесли його сюди, щоб він міг використовувати хук useAuth()
 const Header = () => {
   const { isAuthenticated, user, logout } = useAuth();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Скорочення імені
   const formatName = (name) => {
     if (!name) return 'User';
     const shortName = name.includes('@') ? name.split('@')[0] : name;
     return shortName.length > 10 ? shortName.substring(0, 8) + '..' : shortName;
+  };
+
+  const handleLogout = () => {
+    logout();
+    window.location.href = '/auth'; // Перенаправляємо на сторінку входу
   };
 
   return (
@@ -49,16 +57,16 @@ const Header = () => {
 
                     <div style={{ width: '1px', height: '25px', background: 'rgba(255,255,255,0.1)', margin: '0 5px' }}></div>
 
-                    {/* Профіль */}
-                    <div style={userBadgeStyle}>
+                    {/* Профіль - клікаємо щоб перейти на сторінку профілю */}
+                    <Link to="/profile" style={{...userBadgeStyle, textDecoration: 'none', cursor: 'pointer'}}>
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', marginRight: '10px' }}>
                             <span style={{ fontSize: '0.6rem', color: '#888', letterSpacing: '1px', textTransform: 'uppercase', lineHeight: '1' }}>КОРИСТУВАЧ</span>
                             <span style={{ color: '#fff', fontWeight: 'bold', fontFamily: "'Orbitron', sans-serif", fontSize: '0.9rem', lineHeight: '1.2' }}>
                                 {formatName(user?.name)}
                             </span>
                         </div>
-                        <button onClick={logout} style={logoutBtnStyle} title="Вийти">⏻</button>
-                    </div>
+                        <button onClick={handleLogout} style={logoutBtnStyle} title="Вийти">⏻</button>
+                    </Link>
                 </>
             ) : (
                 // ЯКЩО НЕ УВІЙШОВ - ТІЛЬКИ КНОПКА ВХОДУ
@@ -98,6 +106,14 @@ function App() {
                       <Catalog />
                     </ProtectedRoute>
                   } 
+                />
+                <Route 
+                  path="/profile"
+                  element={
+                    <ProtectedRoute>
+                      <Profile />
+                    </ProtectedRoute>
+                  }
                 />
                 <Route 
                   path="/build" 

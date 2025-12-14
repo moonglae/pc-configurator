@@ -9,6 +9,8 @@ import (
 type Authorization interface {
 	CreateUser(user models.User) (int, error)
 	GetUserByEmail(email string) (models.User, error)
+	GetUserByID(id int) (models.User, error)
+	UpdatePassword(userID int, newPasswordHash string) error
 }
 
 // ComponentRepository - інтерфейс для роботи з товарами

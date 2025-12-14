@@ -15,6 +15,8 @@ export const endpoints = {
     auth: {
         login: '/auth/sign-in',
         register: '/auth/sign-up',
+        profile: '/auth/me',
+        changePassword: '/auth/change-password',
     },
     components: {
         getAll: '/components',
@@ -22,11 +24,10 @@ export const endpoints = {
     builder: {
         validate: '/validate',
     },
-    // --- ОСЬ ЦЬОГО БЛОКУ ВАМ НЕ ВИСТАЧАЛО ---
     orders: {
-        create: '/orders'
+        create: '/orders',
+        getMyOrders: '/orders/my'
     }
-    // ----------------------------------------
 };
 
 // Автоматичне додавання токена до запитів

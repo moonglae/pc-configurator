@@ -125,9 +125,10 @@ const PCBuilder = () => {
                     <div className="neon-text" style={{ fontSize: '1.5rem' }}>SCANNING DATABASE...</div>
                 </div>
             ) : (
-                <div style={styles.itemsGrid}> {/* <-- ЗМІНЕНО НАЗВУ КЛАСУ */}
+                <div className="products-grid" style={styles.itemsGrid}> {/* <-- АДАПТИВНА СІТКА */}
                     {availableItems.length > 0 ? availableItems.map((item, idx) => (
                         <ComponentCard 
+                            className="product-card"
                             key={item.id} 
                             item={item} 
                             onSelect={(i) => selectComponent(activeCategory, i)}

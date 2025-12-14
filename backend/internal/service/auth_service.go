@@ -103,7 +103,41 @@ func (s *AuthService) ParseToken(accessToken string) (int, error) {
 	return claims.UserID, nil
 }
 
-// generatePasswordHash - допоміжна функція
+// GetUserByID - Отримання інформації про користувача за ID
+func (s *AuthService) GetUserByID(userID int) (models.User, error) {
+	return s.repo.GetUserByID(userID)
+}
+
+// ChangePassword - Зміна пароля користувача
+func (s *AuthService) ChangePassword(userID int, oldPassword, newPassword string) error {
+	// Перевіряємо формат нового пароля
+	if len(newPassword) < 6 {
+		return errors.New("новий пароль повинен бути мінімум 6 символів")
+	}
+
+	// Отримуємо користувача для перевірки старого пароля
+	user, err := s.repo.GetUserByID(userID)
+	if err != nil {
+		return err
+	}
+
+	// Перевіряємо старий пароль
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(oldPassword))
+	if err != nil {
+		return errors.New("неправильний поточний пароль")
+	}
+
+	// Хешуємо новий пароль
+	newHash, err := generatePasswordHash(newPassword)
+	if err != nil {
+		return err
+	}
+
+	// Оновлюємо пароль у репозиторії
+	return s.repo.UpdatePassword(userID, newHash)
+}
+
+// generatePasswordHash - допоміжна функція для хешування пароля
 func generatePasswordHash(password string) (string, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	return string(bytes), err

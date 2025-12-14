@@ -42,6 +42,14 @@ func (h *Handler) CreateOrder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Потрібна авторизація: беремо user_id з контексту або повертаємо помилку
+	userID, ok := r.Context().Value(CtxUserID).(int)
+	if !ok || userID == 0 {
+		respondWithError(w, http.StatusUnauthorized, "Потрібно увійти в акаунт, щоб оформити замовлення")
+		return
+	}
+	req.UserID = userID
+
 	// Зберігаємо в базу
 	orderId, err := h.orderRepo.CreateOrder(req)
 	if err != nil {
@@ -135,6 +143,88 @@ func (h *Handler) SignIn(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	respondWithJSON(w, http.StatusOK, map[string]string{"token": token})
+}
+
+// --- PROFILE HANDLERS (НОВІ) ---
+
+// GetProfile - GET /api/auth/me - Отримання інформації про поточного користувача
+func (h *Handler) GetProfile(w http.ResponseWriter, r *http.Request) {
+	// Отримуємо ID користувача з контексту (встановлено AuthMiddleware)
+	userID, ok := r.Context().Value(CtxUserID).(int)
+	if !ok {
+		respondWithError(w, http.StatusUnauthorized, "Не авторизовано")
+		return
+	}
+
+	// Отримуємо дані користувача з БД
+	user, err := h.authService.GetUserByID(userID)
+	if err != nil {
+		respondWithError(w, http.StatusNotFound, "Користувача не знайдено")
+		return
+	}
+
+	// Повертаємо інформацію без пароля
+	respondWithJSON(w, http.StatusOK, map[string]interface{}{
+		"id":    user.ID,
+		"name":  user.Name,
+		"email": user.Email,
+	})
+}
+
+// ChangePassword - POST /api/auth/change-password - Зміна пароля
+type changePasswordRequest struct {
+	CurrentPassword string `json:"current_password"`
+	NewPassword     string `json:"new_password"`
+}
+
+func (h *Handler) ChangePassword(w http.ResponseWriter, r *http.Request) {
+	// Отримуємо ID користувача з контексту
+	userID, ok := r.Context().Value(CtxUserID).(int)
+	if !ok {
+		respondWithError(w, http.StatusUnauthorized, "Не авторизовано")
+		return
+	}
+
+	var req changePasswordRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		respondWithError(w, http.StatusBadRequest, "Некоректні дані")
+		return
+	}
+
+	// Змінюємо пароль через сервіс
+	err := h.authService.ChangePassword(userID, req.CurrentPassword, req.NewPassword)
+	if err != nil {
+		respondWithError(w, http.StatusUnauthorized, err.Error())
+		return
+	}
+
+	respondWithJSON(w, http.StatusOK, map[string]string{
+		"message": "Пароль успішно змінено",
+	})
+}
+
+// GetUserOrders - GET /api/orders/my - Отримання замовлень поточного користувача
+func (h *Handler) GetUserOrders(w http.ResponseWriter, r *http.Request) {
+	// Отримуємо ID користувача з контексту
+	userID, ok := r.Context().Value(CtxUserID).(int)
+	if !ok {
+		respondWithError(w, http.StatusUnauthorized, "Не авторизовано")
+		return
+	}
+
+	// Отримуємо замовлення користувача
+	orders, err := h.orderRepo.GetUserOrders(userID)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Помилка при отриманні замовлень")
+		return
+	}
+
+	// Якщо немає замовлень - повертаємо порожній масив
+	if orders == nil {
+		orders = []map[string]interface{}{}
+	}
+
+	respondWithJSON(w, http.StatusOK, orders)
 }
 
 // Helpers
