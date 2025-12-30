@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { BuilderProvider } from './context/BuilderContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -10,18 +10,32 @@ import Catalog from './pages/Catalog';
 import BuildPage from './pages/BuildPage';
 import AuthPage from './pages/AuthPage';
 import Profile from './pages/Profile';
+import RecommendationPage from './pages/RecommendationPage';
+import ComparisonPage from './pages/ComparisonPage';
 
 // --- ОКРЕМИЙ КОМПОНЕНТ ШАПКИ (Header) ---
 // Ми винесли його сюди, щоб він міг використовувати хук useAuth()
 const Header = () => {
   const { isAuthenticated, user, logout } = useAuth();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { pathname } = useLocation();
 
   // Скорочення імені
   const formatName = (name) => {
     if (!name) return 'User';
     const shortName = name.includes('@') ? name.split('@')[0] : name;
     return shortName.length > 10 ? shortName.substring(0, 8) + '..' : shortName;
+  };
+
+  // Функція для визначення активної кнопки
+  const getNavButtonStyle = (path) => {
+    const isActive = pathname === path;
+    return {
+      ...baseBtnStyle,
+      background: isActive ? 'rgba(213, 0, 0, 0.2)' : 'transparent',
+      border: isActive ? '1px solid #d50000' : '1px solid rgba(255, 255, 255, 0.3)',
+      color: isActive ? '#ff5555' : '#e0e0e0',
+      boxShadow: isActive ? '0 0 10px rgba(213, 0, 0, 0.3)' : 'none'
+    };
   };
 
   const handleLogout = () => {
@@ -47,11 +61,19 @@ const Header = () => {
             {/* ПОКАЗУЄМО ЦЕ ТІЛЬКИ ЯКЩО УВІЙШОВ */}
             {isAuthenticated ? (
                 <>
-                    <Link to="/catalog" style={secondaryButtonStyle}>
+                    <Link to="/catalog" style={getNavButtonStyle('/catalog')}>
                         КАТАЛОГ
                     </Link>
 
-                    <Link to="/build" style={primaryButtonStyle}>
+                    <Link to="/comparison" style={getNavButtonStyle('/comparison')}>
+                        📊 ПОРІВНЯННЯ
+                    </Link>
+
+                    <Link to="/recommend" style={getNavButtonStyle('/recommend')}>
+                        🎮 ПІДБІР
+                    </Link>
+
+                    <Link to="/build" style={getNavButtonStyle('/build')}>
                         ЗІБРАТИ ПК 🚀
                     </Link>
 
@@ -97,6 +119,8 @@ function App() {
               <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/auth" element={<AuthPage />} />
+                <Route path="/recommend" element={<RecommendationPage />} />
+                <Route path="/comparison" element={<ComparisonPage />} />
                 
                 {/* Захищені маршрути */}
                 <Route 
@@ -178,20 +202,12 @@ const baseBtnStyle = {
   transition: 'all 0.2s', fontFamily: "'Montserrat', sans-serif"
 };
 
-const secondaryButtonStyle = {
-  ...baseBtnStyle, background: 'transparent',
-  border: '1px solid rgba(255, 255, 255, 0.3)', color: '#e0e0e0',
-};
-
-const primaryButtonStyle = {
-  ...baseBtnStyle, background: 'linear-gradient(45deg, #d50000, #b71c1c)',
-  border: 'none', color: 'white', boxShadow: '0 4px 15px rgba(213, 0, 0, 0.2)',
-};
-
 const loginBtnStyle = {
-    ...secondaryButtonStyle,
+    ...baseBtnStyle,
     color: '#d50000',
     borderColor: '#d50000',
+    border: '1px solid #d50000',
+    background: 'transparent',
     padding: '0 30px' // Трохи ширша кнопка входу
 };
 

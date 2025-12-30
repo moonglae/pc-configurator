@@ -47,6 +47,7 @@ func main() {
 	mux.HandleFunc("/api/auth/sign-in", handlers.SignIn)
 	mux.HandleFunc("/api/components", handlers.GetAllComponents)
 	mux.HandleFunc("/api/validate", handlers.ValidateBuild)
+	mux.HandleFunc("/api/recommend", handlers.GetRecommendation)
 
 	// НОВИЙ МАРШРУТ ДЛЯ ЗАМОВЛЕНЬ (лише для авторизованих користувачів)
 	mux.HandleFunc("/api/orders", mw.AuthMiddleware(handlers.CreateOrder))
@@ -54,6 +55,7 @@ func main() {
 	// ЗАХИЩЕНІ МАРШРУТИ (потребують авторизації)
 	mux.HandleFunc("/api/auth/me", mw.AuthMiddleware(handlers.GetProfile))
 	mux.HandleFunc("/api/auth/change-password", mw.AuthMiddleware(handlers.ChangePassword))
+	mux.HandleFunc("/api/auth/update-profile", mw.AuthMiddleware(handlers.UpdateProfile))
 	mux.HandleFunc("/api/orders/my", mw.AuthMiddleware(handlers.GetUserOrders))
 
 	// 5. Запуск сервера

@@ -64,31 +64,17 @@ func (r *AuthPostgres) GetUserByID(id int) (models.User, error) {
 	return user, nil
 }
 
-// ChangePassword - Зміна пароля користувача
-func (r *AuthPostgres) ChangePassword(userID int, oldPassword, newPassword string) error {
-	// Спочатку отримуємо користувача, щоб перевірити старий пароль
-	user, err := r.GetUserByID(userID)
+// UpdateProfile - Оновлення імені та email користувача
+func (r *AuthPostgres) UpdateProfile(userID int, name, email string) error {
+	query := "UPDATE users SET name=$1, email=$2 WHERE id=$3"
+	_, err := r.db.Exec(query, name, email, userID)
 	if err != nil {
-		return err
+		return fmt.Errorf("помилка оновлення профілю: %w", err)
 	}
-
-	// Перевіряємо чи старий пароль правильний (припускаємо, що пароль зберігається як простий текст або хешований)
-	// ВНУТРІШНЯ ПЕРЕВІРКА: У реальному проекті тут повинна бути перевірка хешу
-	if user.Password != oldPassword {
-		return fmt.Errorf("неправильний поточний пароль")
-	}
-
-	// Оновлюємо пароль
-	query := "UPDATE users SET password_hash=$1 WHERE id=$2"
-	_, err = r.db.Exec(query, newPassword, userID)
-	if err != nil {
-		return fmt.Errorf("помилка оновлення пароля: %w", err)
-	}
-
 	return nil
 }
 
-// UpdatePassword - Оновлення пароля користувача (для сервісу)
+// UpdatePassword - Оновлення пароля користувача
 func (r *AuthPostgres) UpdatePassword(userID int, newPasswordHash string) error {
 	query := "UPDATE users SET password_hash=$1 WHERE id=$2"
 	_, err := r.db.Exec(query, newPasswordHash, userID)

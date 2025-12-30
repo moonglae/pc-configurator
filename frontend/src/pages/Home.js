@@ -22,6 +22,9 @@ const Home = () => {
                     <Link to="/build" style={styles.primaryBtn}>
                         ПОЧАТИ ЗБІРКУ <span style={{fontSize: '1.2rem'}}>🚀</span>
                     </Link>
+                    <Link to="/recommend" style={styles.secondaryBtn}>
+                        ПІДБІР ЗА ГРОЮ 🎮
+                    </Link>
                     <Link to="/catalog" style={styles.secondaryBtn}>
                         КАТАЛОГ ДЕТАЛЕЙ
                     </Link>

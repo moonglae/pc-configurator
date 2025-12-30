@@ -11,10 +11,11 @@ import (
 )
 
 type Handler struct {
-	compRepo    repository.ComponentRepository
-	compService *service.CompatibilityService
-	authService *service.AuthService
-	orderRepo   *repository.OrderRepo // <--- ДОДАЛИ ЦЕ ПОЛЕ
+	compRepo     repository.ComponentRepository
+	compService  *service.CompatibilityService
+	authService  *service.AuthService
+	orderRepo    *repository.OrderRepo
+	recommendSvc *service.RecommendationService
 }
 
 // Оновили конструктор (додали repoOrder)
@@ -22,13 +23,14 @@ func NewHandler(
 	r repository.ComponentRepository,
 	cs *service.CompatibilityService,
 	as *service.AuthService,
-	or *repository.OrderRepo, // <--- І ТУТ
+	or *repository.OrderRepo,
 ) *Handler {
 	return &Handler{
-		compRepo:    r,
-		compService: cs,
-		authService: as,
-		orderRepo:   or, // <--- І ТУТ
+		compRepo:     r,
+		compService:  cs,
+		authService:  as,
+		orderRepo:    or,
+		recommendSvc: service.NewRecommendationService(r),
 	}
 }
 
@@ -203,6 +205,38 @@ func (h *Handler) ChangePassword(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// UpdateProfile - PUT /api/auth/update-profile - Оновлення імені та email користувача
+type updateProfileRequest struct {
+	Name  string `json:"name"`
+	Email string `json:"email"`
+}
+
+func (h *Handler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
+	userID, ok := r.Context().Value(CtxUserID).(int)
+	if !ok {
+		respondWithError(w, http.StatusUnauthorized, "Не авторизовано")
+		return
+	}
+
+	var req updateProfileRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		respondWithError(w, http.StatusBadRequest, "Некоректні дані")
+		return
+	}
+
+	if req.Email == "" && req.Name == "" {
+		respondWithError(w, http.StatusBadRequest, "Нічого оновлювати")
+		return
+	}
+
+	if err := h.authService.UpdateProfile(userID, req.Name, req.Email); err != nil {
+		respondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	respondWithJSON(w, http.StatusOK, map[string]string{"message": "Профіль оновлено"})
+}
+
 // GetUserOrders - GET /api/orders/my - Отримання замовлень поточного користувача
 func (h *Handler) GetUserOrders(w http.ResponseWriter, r *http.Request) {
 	// Отримуємо ID користувача з контексту
@@ -225,6 +259,24 @@ func (h *Handler) GetUserOrders(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respondWithJSON(w, http.StatusOK, orders)
+}
+
+// --- RECOMMENDATION HANDLER (НОВОЕ) ---
+func (h *Handler) GetRecommendation(w http.ResponseWriter, r *http.Request) {
+	var req service.RecommendationRequest
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		respondWithError(w, http.StatusBadRequest, "Некоректні дані запиту")
+		return
+	}
+
+	result, err := h.recommendSvc.GetRecommendation(r.Context(), req)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Помилка при підборі конфігурації")
+		return
+	}
+
+	respondWithJSON(w, http.StatusOK, result)
 }
 
 // Helpers

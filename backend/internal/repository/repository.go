@@ -11,6 +11,8 @@ type Authorization interface {
 	GetUserByEmail(email string) (models.User, error)
 	GetUserByID(id int) (models.User, error)
 	UpdatePassword(userID int, newPasswordHash string) error
+	// UpdateProfile - оновлення імені та email користувача
+	UpdateProfile(userID int, name, email string) error
 }
 
 // ComponentRepository - інтерфейс для роботи з товарами

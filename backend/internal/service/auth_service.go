@@ -137,6 +137,12 @@ func (s *AuthService) ChangePassword(userID int, oldPassword, newPassword string
 	return s.repo.UpdatePassword(userID, newHash)
 }
 
+// UpdateProfile - оновлює ім'я та email користувача
+func (s *AuthService) UpdateProfile(userID int, name, email string) error {
+	// Можна додати валідацію email тут при потребі
+	return s.repo.UpdateProfile(userID, name, email)
+}
+
 // generatePasswordHash - допоміжна функція для хешування пароля
 func generatePasswordHash(password string) (string, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)

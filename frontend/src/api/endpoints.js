@@ -23,6 +23,7 @@ export const endpoints = {
     },
     builder: {
         validate: '/validate',
+        recommend: '/recommend',
     },
     orders: {
         create: '/orders',
