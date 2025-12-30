@@ -151,7 +151,7 @@ function App() {
             </main>
 
             <footer style={{ backgroundColor: '#050505', padding: '30px', textAlign: 'center', color: '#444', borderTop: '1px solid #111', fontSize: '0.8rem' }}>
-              SYSTEM VERSION 1.0 // © 2024 RED DRAGON SYSTEMS
+              SYSTEM VERSION 1.0 // © 2025 STUDENT Mykola Zibrov
             </footer>
 
           </div>

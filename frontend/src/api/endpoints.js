@@ -1,10 +1,11 @@
 import axios from 'axios';
 
-// Базова адреса вашого Go-сервера
-const API_BASE_URL = 'http://localhost:8080/api';
+
+const API_URL = "https://pc-configurator-backend.onrender.com/api";
 
 export const api = axios.create({
-    baseURL: API_BASE_URL,
+    // ✅ Виправлено: використовуємо правильну змінну API_URL
+    baseURL: API_URL,
     headers: {
         'Content-Type': 'application/json',
     },
